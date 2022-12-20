@@ -47,7 +47,7 @@ Organization of this file:
 5.4.3.				Motivation
 
 6.			Printing LaTeX compilable tables
-6.1.
+6.1.				Parameters
 
 			Glossary
 
