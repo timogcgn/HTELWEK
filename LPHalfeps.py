@@ -1,4 +1,4 @@
-CenteredBinomialHalfBib={(2,6): {(10, 1): 0.082,
+CenteredBinomialHalfeps={(2,6): {(10, 1): 0.082,
  (10, 2): 0.081,
  (10, 3): 0.056,
  (10, 4): 0.033,

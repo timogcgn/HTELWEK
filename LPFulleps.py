@@ -1,4 +1,4 @@
-CenteredBinomialFullBib={
+CenteredBinomialFulleps={
  (2, 2): {(10, 1): 0.016,
   (20, 1): 0.0,
   (21, 1): 0.0,
