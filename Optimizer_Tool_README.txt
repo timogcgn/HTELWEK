@@ -17,12 +17,7 @@ Organization of this file:
 
 3.			Rep Parameters
 3.1.			eps
-3.2.			eps functions
-3.2.1.				nulleps
-3.2.2.				leveleps
-3.2.3.				copyeps
-3.2.4.				formateps
-3.3.			Evaluation
+3.2.			Evaluation
 
 4.			optimizer
 4.1.			Parameters
@@ -47,7 +42,7 @@ Organization of this file:
 5.4.3.				Motivation
 
 6.			Printing LaTeX compilable tables
-6.1.				Parameters
+6.1.
 
 			Glossary
 
@@ -130,34 +125,7 @@ The parameter sets we found for predefined distributions can be called as follow
 	- 1<=d<=8
 
 
---- 3.2. PARAMETER EPS FUNCTIONS ---
-
-We provide some functions to create and modify epss. These are as follows:
-
-
-- 3.2.1. NULLEPS -
-
-nulleps(d) returns a eps of depth d that only contains 0 entries for every parameter.
-
-
-- 3.2.2. LEVELEPS -
-
-leveleps(eps, j) returns all 8 parameters of the designated level j in form of an array [eps[10,j],eps[20,j],eps[21,j],eps[22,j],eps[30,j],eps[31,j],eps[32,j],eps[33,j]].
-
-
-- 3.2.3. COPYEPS -
-
-copyeps(eps) creates another eps with the same entries as eps.
-Can also be used to merge 2 epss. For this, set three additional optional parameters epsscale, changeeps and changescale. The output will then be of the form output[i,j]=eps[i,j]*epsscale+changeeps[i,j]*changescale
-
-
-- 3.2.4. FORMATEPS -
-
-formateps(eps,d) returns an output eps of depth d where output[i,j]=eps[i,j] if the latter is defined and 0 otherwise.
-Optionally, the order of the output eps can be sorted by ascending level first, representation index second (set levelfirst=True) or descending level first, representation index second (set reverselevelfirst=True).
-
-
---- 3.3. EVALUATION ---
+--- 3.2. EVALUATION ---
 
 To find the amount of representations (in log_(2^N)) that exist for a search space w and a set of parameters [eps[10],...,eps[33]], call representations(w, [eps[10],...,eps[33]])
 
@@ -183,17 +151,17 @@ The second phase, gd_search, is called iteratively, until a runtime improvement 
 
 --- 4.1. PARAMETERS ---
 
-- dist: distribution for which we hope to find a good parameter set
-- d: search tree depth. By default set to 4
+- dist (array): distribution for which we hope to find a good parameter set
+- d (int): search tree depth. By default set to 4
 - rough, setupdelta: see 4.2.2.
 - gamma, gd_delta, gd_scale: see 4.3.2.
-- delta: dictates the minimal runtime improvements that need to be made to stop algorithm from terminating. By default set to 0.0001 .
-- gd_round: If set to False, omits any gd_search and outputs the parameter set found after phase 1. By default set to True.
-- initeps: initeps describes the parameter set that we want to optimize. By default set to {}. If initeps is left as {}, the optimizer will find a decent parameter set to initiate the optimizing process from; otherwise, the setup phase will be skipped and initeps will be used as starting point for the gd_search phase.
-- f: f can be set to either roundeps or ideps. If set to roundeps, every parameter set found by setup and gd_search will be rounded to 3 decimal places. By default set to ideps
+- delta (float): dictates the minimal runtime improvements that need to be made to stop algorithm from terminating. By default set to 0.0001 .
+- gd_round (bool): If set to False, omits any gd_search and outputs the parameter set found after phase 1. By default set to True.
+- initeps (dict): initeps describes the parameter set that we want to optimize. By default set to {}. If initeps is left as {}, the optimizer will find a decent parameter set to initiate the optimizing process from; otherwise, the setup phase will be skipped and initeps will be used as starting point for the gd_search phase.
+- f (function): f can be set to either roundeps or ideps. If set to roundeps, every parameter set found by setup and gd_search will be rounded to 3 decimal places. By default set to ideps
 - lightningiter: see 5.4.2.
 - optruthdict: see 5.3.
-- printset: every time either setup or gd_search finds a new parameter eps that improves optT, every element inside printset is printed. Only interesting on multiple iterations of the optimization program. By default, printset is empty (Note that opteps, T and optT are always printed when optT decreases, independently of printset).
+- printset (array): every time either setup or gd_search finds a new parameter eps that improves optT, every element inside printset is printed. Only interesting on multiple iterations of the optimization program. By default, printset is empty (Note that opteps, T and optT are always printed when optT decreases, independently of printset).
 
 
 --- 4.2. PHASE 1: SETUP ---
@@ -208,19 +176,19 @@ The setup phase does not aim to find an optimal parameter; instead, it aims to f
 
 - 4.2.2. PARAMETERS -
 
-- w: Array that contains d+1 distribution arrays, each distribution w[j] describes the search space distribution on level j; for j>curlevel, w[j] is constantly set to [0,...,0].
-- R: Array that contains d+1 numbers, denoting the amount (in log_(2^N)) of representations R[j] found on level j with the current parameter set; for j>curlevel, R[j] is constantly set to 0.
-- S: Array that contains d+1 numbers, denoting the search space size S[j] (in log_(2^N)) of w[j] on level j with the current parameter set; for j>curlevel, S[j] is constantly set to 0.
-- T: Array that contains d+1 numbers, denoting the run time T[j] (in log_(2^N)) required to build one level j list; for j>curlevel, T[j] is constantly set to 0.
-- L: Array that contains d+1 numbers, denoting the memory requirements L[j] (in log_(2^N)) for one level j list; for j>curlevel, L[j] is constantly set to 0.
-- d: Meet-LWE tree depth.
-- curlevel: current level in which parameters are to be optimized.
-- optT: describes the currently best known runtime for any parameter set. Is to be optimized.
-- opteps: describes a parameter eps that would yield the currently best known runtime, i.e. optT=max(evl_T(dist, d, opteps)).
-- initeps: propagates the lower level parameters to the current level. If, on curlevel=d-1, we have optT>evl_T(dist, d, initeps), we update opteps to initeps. When this readme mentions the "current parameter set", initeps is what that refers to.
-- rough: Brute Force step size: For every eps[i,j] where i={10, 20, 21, 22, 30, 31, 32, 33}, 1<=j<d, we try exactly rough+1 many parameters in the setup phase. By default set to 4.
-- setupdelta: Reduces runtime in exchange for thoroughness: To consider the current initeps, we are required to improve the runtime by at least setupdelta, i.e. max(evl_T(dist, d, initeps))-optT>setupdelta. By default set to 0.0001 .
-- printset: every time Setup finds a new parameter eps that improves optT, every element inside printset is printed. Only interesting on multiple iterations of the optimization program. By default, printset is empty (Note that opteps, T and optT are always printed when optT decreases, independently of printset).
+- w (array): contains d+1 distribution arrays, each distribution w[j] describes the search space distribution on level j; for j>curlevel, w[j] is constantly set to [0,...,0].
+- R (array): contains d+1 numbers, denoting the amount (in log_(2^N)) of representations R[j] found on level j with the current parameter set; for j>curlevel, R[j] is constantly set to 0.
+- S (array): contains d+1 numbers, denoting the search space size S[j] (in log_(2^N)) of w[j] on level j with the current parameter set; for j>curlevel, S[j] is constantly set to 0.
+- T (array): contains d+1 numbers, denoting the run time T[j] (in log_(2^N)) required to build one level j list; for j>curlevel, T[j] is constantly set to 0.
+- L (array): contains d+1 numbers, denoting the memory requirements L[j] (in log_(2^N)) for one level j list; for j>curlevel, L[j] is constantly set to 0.
+- d (int): Meet-LWE tree depth.
+- curlevel (int): current level in which parameters are to be optimized.
+- optT (float): describes the currently best known runtime for any parameter set. Is to be optimized.
+- opteps (dict): describes a parameter set that would yield the currently best known runtime, i.e. optT=max(evl_T(dist, d, opteps)).
+- initeps (dict): propagates the lower level parameters to the current level. If, on curlevel=d-1, we have optT>evl_T(dist, d, initeps), we update opteps to initeps. When this readme mentions the "current parameter set", initeps is what that refers to.
+- rough (int): Brute Force step size: For every eps[i,j] where i={10, 20, 21, 22, 30, 31, 32, 33}, 1<=j<d, we try exactly rough+1 many parameters in the setup phase. By default set to 4.
+- setupdelta (float): Reduces runtime in exchange for thoroughness: To consider the current initeps, we are required to improve the runtime by at least setupdelta, i.e. max(evl_T(dist, d, initeps))-optT>setupdelta. By default set to 0.0001 .
+- printset (array): every time Setup finds a new parameter eps that improves optT, every element inside printset is printed. Only interesting on multiple iterations of the optimization program. By default, printset is empty (Note that opteps, T and optT are always printed when optT decreases, independently of printset).
 
 
 - 4.2.3. ALGORITHM -
@@ -256,14 +224,14 @@ gd_search can be considered a discrete version of the gradient descent optimizat
 - 4.3.2. PARAMETERS -
 
 - w, R, S, T, L, d, curlevel, optT, opteps, initeps, printset: same functionality as with setup.
-- oldeps: contains the output from the previous iteration of gd_search (or the output of setup/initial input initeps, if this is the first call of gd_search).
-- oldchangeeps: contains the optchangeeps from the previous iteration of gd_search (or nulleps(d-1), if this is the first call of gd_search).
-- changeeps: contains the changes made to all parameters in initeps, compared to oldeps (i.e. changeeps=oldeps-initeps).
-- optchangeeps: contains the changes made to the optimal parameter set from the previous iteration, compared to oldeps.
-- gamma: denotes the search step size, i.e. initeps[i,j]-oldeps[i,j] is always k*gamma for some integer k. Initially set to 0.001.
-- gd_delta: similar functionality to setupdelta, i.e. we want to improve the runtime by at least gd_delta in each step. Initially set to 0.
-- gd_scale: similarly to gd_delta, gd_scale dictates a minimal improvement over optT by scaling it by a relative amount. Overall formula is max(T[0],...,T[curlevel-1])<gd_scale*optT-gd_delta. initially set to 1.
-- lightningiter: dictates an upper bound of parameters that are to be looked at in the lightning_gd phase, i.e. the runtime of one iteration of lightning_gd (see 5.4.). Initially set to 1000000.
+- oldeps (dict): contains the output from the previous iteration of gd_search (or the output of setup/initial input initeps, if this is the first call of gd_search).
+- oldchangeeps (dict): contains the optchangeeps from the previous iteration of gd_search (or nulleps(d-1), if this is the first call of gd_search).
+- changeeps (dict): contains the changes made to all parameters in initeps, compared to oldeps (i.e. changeeps=oldeps-initeps).
+- optchangeeps (dict): contains the changes made to the optimal parameter set from the previous iteration, compared to oldeps.
+- gamma (float): denotes the search step size, i.e. initeps[i,j]-oldeps[i,j] is always k*gamma for some integer k. Initially set to 0.001.
+- gd_delta (float): similar functionality to setupdelta, i.e. we want to improve the runtime by at least gd_delta in each step. Initially set to 0.
+- gd_scale (float): similarly to gd_delta, gd_scale dictates a minimal improvement over optT by scaling it by a relative amount. Overall formula is max(T[0],...,T[curlevel-1])<gd_scale*optT-gd_delta. initially set to 1.
+- lightningiter (int): dictates an upper bound of parameters that are to be looked at in the lightning_gd phase, i.e. the runtime of one iteration of lightning_gd (see 5.4.). Initially set to 1000000.
 
 
 - 4.3.3. GD_SEARCH -
@@ -281,7 +249,7 @@ Instead, what we do is to consider all parameters as a grid of step size gamma: 
 
 In the state described above, gd_search would consider O(3^((d-1)*8) ) many parameter sets per iteration: We have 8 parameters per level and there are parameters on every level j=1,...,d-1. As a result, this method is rendered inconceivable for even moderate tree depths.
 
-To combat these runtimes, we introduced methods to reduce the overall runtime significantly. These changes reduce the runtime significantly, so that it is now possible to find parameter sets with a decent value optT within only a few minutes.
+To combat these runtimes, we introduced methods to reduce the overall runtime significantly, so that it is now possible to find parameter sets with a decent value optT within only a few minutes.
 
 
 --- 5.1. NO IMMEDIATE REVERTS ---
@@ -305,7 +273,7 @@ Whether a parameter eps[i,j] is to be optimized in a current iteration is determ
 
 create_randset(d) creates 300 bitstrings. Each string is comprised of d substrings of length 8, where each substring has a predefined hamming weigth: the first 100 bitstrings have substring hamming weight 2, the next 100 have hamming weight 3 and the last 100 strings have hamming weight 4.
 
-If bitstrings of different hamming weight should also be included or the amount of weight 2, 3, 4 strings should be altered, use optional arguments it1, it2, etc. . For example, to add 500 additional bitstrings of substring hamming weight 5, use it5=500.
+These hamming weight distributions have been chosen arbitrarily, but their results seem to be sufficient and increasing the amount of trials does not seem to imrpove our results radically. However, if bitstrings of different hamming weight should also be included or the amount of weight 2, 3, 4 strings should be altered, use optional arguments it1, it2, etc. . For example, to add 500 additional bitstrings of substring hamming weight 5, use it5=500.
 
 
 - 5.3.2. FULLBINTRUTHDICT -
@@ -334,7 +302,7 @@ After finding a parameter set with gd_search that yields better runtimes that op
 - 5.4.2. PARAMETERS -
 
 - w, R, S, T, L, d, curlevel, optT, opteps, oldeps, initeps, changeeps, optchangeeps, gamma, printset: same functionality as with gd_search.
-- lightningsets: Upper bounds the amount of parameter sets that are to be considered in one coll of lightning_gd. By default set to 1000000.
+- lightningsets (int): contains the parameter changes that are to be examined in the lightning phase,
 
 
 - 5.4.3. MOTIVATION -
@@ -361,15 +329,15 @@ To print a singular table for one distribution dist and one parameter set eps, c
 
 --- 6.1. PARAMETERS ---
 
-- name: Puts the given name in the leftmost column of the table.
-- eps: parameter set to be printed.
-- eta: if dist is undefined, the distribution will be set to centered_binom_search(eta) by default. Set to 3 by default.
-- d: denotes the depth of the search tree and the table. By default set to 4.
-- dist: Distribution to be displayed in the table. If left [], automatically assumes that the distribution is centered_binom_search(eta).
-- treatzero: Denotes how zeroes will be displayed in the table. By default set to " ".
-- ifthrees: If True, parameters eps[30,j], eps[31,j], eps[32,j], eps[33,j] will be displayed in the table. Set to False if parameters are Rep-2 parameters only.
-- ifcolor: If True, every second column will be gray. By default set to True.
-- iftop, ifbottom: These two boolean values denote whether or not the top and bottom of the table will be printed. If multiple epsilon parameter sets are to be displayed, it is recommended to set both to false and print the top and bottom separately.
+- name (str): Puts the given name in the leftmost column of the table.
+- eps (dict): parameter set to be printed.
+- eta (int): if dist is undefined, the distribution will be set to centered_binom_search(eta) by default. Set to 3 by default.
+- d (int): denotes the depth of the search tree and the table. By default set to 4.
+- dist (array): Distribution to be displayed in the table. If left [], automatically assumes that the distribution is centered_binom_search(eta).
+- treatzero (str): Denotes how zeroes will be displayed in the table. By default set to " ".
+- ifthrees (bool): If True, parameters eps[30,j], eps[31,j], eps[32,j], eps[33,j] will be displayed in the table. Set to False if parameters are Rep-2 parameters only.
+- ifcolor (bool): If True, every second column will be gray. By default set to True.
+- iftop, ifbottom (bool): These two boolean values denote whether or not the top and bottom of the table will be printed. If multiple epsilon parameter sets are to be displayed, it is recommended to set both to false and print the top and bottom separately.
 
 
 
@@ -388,32 +356,27 @@ blisseps							2.4., 3.1.
 Blissdist						2.4.
 
 centered_binom_search		2.1.
-copyeps							3.2.3.
-counteps							x.y.3.
 create_randset					5.3.1.
 
 etaSearch						2.1.
-evl								3.3.
-evl_T								3.3.
-evl_L								3.3.
+evl								3.2.
+evl_T								3.2.
+evl_L								3.2.
 
-formateps						3.2.4.
 fullbintruthdict				5.3.2.
 
 ideps								4.1.
 initeps							4.2., 4.3.
 
-leveleps							3.2.2.
 lightning_gd					5.4.
 
-nulleps							3.2.1.
 
 optimizer						4.
 optruthdict						5.3.2.
 
 pbin								2.1.
 
-representations				3.3.
+representations				3.2.
 roundeps							4.1.
 
 searchspace						1.3.
