@@ -41,8 +41,9 @@ Organization of this file:
 5.4.2.				Parameters
 5.4.3.				Motivation
 
-6.			Printing LaTeX compilable tables
-6.1.
+6.			tableprint
+6.1.			Parameters
+6.2.			Print Top/Bottom
 
 			Glossary
 
@@ -81,22 +82,22 @@ To calculate the entropy of a search space, it is instead sufficient to call sea
 --- 2.1. CBD ---
 
 To call the probability function, call pbin(eta, i).
-To create a search space distributed according to the CBD, call centered_binom_search(eta) or etaSearch(eta).
+To create a search space distributed according to the CBD, call centered_binom_dist(eta) or etadist(eta).
 
 
 --- 2.2. UNIFORM DISTRIBUTIONS ---
 
-To create a search space distributed according to the uniform distribution, call uniSearch(eta).
+To create a search space distributed according to the uniform distribution, call unidist(eta).
 
 
 --- 2.3. TERNARY DISTRIBUTIONS ---
 
-To create a search space distributed according to T(weight)=[1-2*weight,weight,0,0,0], call terSearch(weight).
+To create a search space distributed according to T(weight)=[1-2*weight,weight,0,0,0], call terdist(weight).
 
 
 --- 2.4. BLISS DISTRIBUTIONS ---
 
-To create a search space distributed according to BLISS' search spaces, call Blissdist[k] where k corresponds to the numbering of the specific distribution (e.g. to call for BLISS-IV, call Blissdist[4]).
+To create a search space distributed according to BLISS' search spaces, call blissdist[k] where k corresponds to the numbering of the specific distribution (e.g. to call for BLISS-IV, call blissdist[4]).
 
 
 
@@ -193,7 +194,7 @@ The setup phase does not aim to find an optimal parameter; instead, it aims to f
 
 - 4.2.3. ALGORITHM -
 
-The setup phase only takes place if the optimal argument initeps has not been altered; otherwise, the setup phase will be skipped and the gd_search phase will be immediately initiated.
+The setup phase only takes place if the optional argument initeps has not been altered; otherwise, the setup phase will be skipped and the gd_search phase will be initiated immediately.
 
 initeps can be considered as this routine's working parameter set. For every initeps[i,j], setup cycles through all multiples of 1/rough and evaluates the runtime with these parameters. When the current parameter set improves the runtime, it replaces the former best known parameter set (called opteps) as the new optimal parameter set.
 
@@ -203,7 +204,7 @@ setup is a recursive routine. Its inputs contain values d and curlevel, where in
 When curlevel=d-1, instead of calling setup again, the program instead evaluates the final runtime. If it improves on the current optimal runtime, initeps replaces the old best parameter set opteps.
 
 To improve the runtime of the setup phase, appropriate values for rough and setupdelta can be set:
-- increasing rough means that more possible values for initeps[i,j] will be considered. Worst case is that all (rough+1)^(8*(d-1)) parameters come into consideration, which is infeasible to optimize even with moderate tree depths.
+- increasing rough means that more possible values for initeps[i,j] will be considered. Worst case is that all (rough+1)^(8*(d-1)) parameters come into consideration, which is infeasible to optimize even with moderate tree depths. Setting rough=0 will return initeps with all parameters set to 0 immediately.
 - setupdelta demands that, in order to take a parameter set into consideration, it needs to improve the best known runtime by at least setupdelta. Therefore, runtime can be improved by setting an appropriate value for setupdelta, say 0.0001.
 
 The argument printset does not impact optimization and is only of interest when optimizing multiple distributions at once or the same distribution with multiple iterations, e.g. when optimizing different parameters each time.
@@ -264,7 +265,7 @@ gd_delta and gd_scale demand that a minimal runtime improvement needs to be made
 
 --- 5.3. PARAMETER SUBSETS ---
 
-Instead of optimizing all 8*(d-1) many parameters in one singular iteration of optimizer, we randomly choose, say, k parameters per level (so k*(d-1) many parameters overall) and only optimize these parameters while leaving the parameter values for the other (8-k)*(d-1) parameters unchanged. Naturally, most parameters directly or indirectly interact with each other in terms of runtimes, so limiting the optimization process only to a handful of parameters almost certainly yields the drawback that this method would not produce the optimal parameter set - even after multiple iterations, each with randomly drawn parameters to optimizte. However, we assume the difference in the optimal runtime compared to our runtime to be too small to be of serious interest.
+Instead of optimizing all 8*(d-1) many parameters in one singular iteration of optimizer, we randomly choose, say, t parameters per level (so t*(d-1) many parameters overall) and only optimize these parameters while leaving the parameter values for the other (8-t)*(d-1) parameters unchanged. Naturally, most parameters directly or indirectly interact with each other in terms of runtimes, so limiting the optimization process only to a handful of parameters almost certainly yields the drawback that this method would not produce the optimal parameter set - even after multiple iterations, each with randomly drawn parameters to optimize. However, we assume the difference in the optimal runtime compared to our runtime after multiple iterations to be too small to be of serious interest.
 
 Whether a parameter eps[i,j] is to be optimized in a current iteration is determined by a so called truth dictionary, called truthdict: a truthdict td should be comprised of boolean entries td[i,j] where parameter eps[i,j] should be considered for optimization if and only if td[i,j] is set to True. Creating such truth dictionaries can be done by randomly sampling binary strings of length 8*(d-1).
 
@@ -273,18 +274,18 @@ Whether a parameter eps[i,j] is to be optimized in a current iteration is determ
 
 create_randset(d) creates 300 bitstrings. Each string is comprised of d substrings of length 8, where each substring has a predefined hamming weigth: the first 100 bitstrings have substring hamming weight 2, the next 100 have hamming weight 3 and the last 100 strings have hamming weight 4.
 
-These hamming weight distributions have been chosen arbitrarily, but their results seem to be sufficient and increasing the amount of trials does not seem to imrpove our results radically. However, if bitstrings of different hamming weight should also be included or the amount of weight 2, 3, 4 strings should be altered, use optional arguments it1, it2, etc. . For example, to add 500 additional bitstrings of substring hamming weight 5, use it5=500.
+These hamming weight distributions have been chosen arbitrarily, but their results seem to be sufficient and increasing the amount of trials does not seem to improve our results radically. However, if bitstrings of different hamming weight should also be included or the amount of weight 2, 3, 4 strings should be altered, use optional arguments it1, it2, etc. . As an example, to add 500 additional bitstrings of substring hamming weight 5, use it5=500.
 
 
 - 5.3.2. FULLBINTRUTHDICT -
 
-These bitstrings can be used to create a truth dictionary. For example, the string '11110000' denotes that the first 4 parameters (dict[10,j], dict[20,j], dict[21,j], dict[22,j]) are set to true, while the last 4 parameters (dict[30,j], dict[31,j], dict[32,j], epdicts[33,j]) will remain constant throughout this iteration of optimizer.
+These bitstrings can be used to create a truth dictionary. For example, the string '11110000' denotes that the first 4 dictionary entries (dict[10,j], dict[20,j], dict[21,j], dict[22,j]) are set to true and their respective parameters will be considered for optimizing, while the last 4 entries (dict[30,j], dict[31,j], dict[32,j], dict[33,j]) will be false and the respective parameters remain constant throughout this iteration of the optimizer.
 
 To convert a string s to a truthdict, call fullbintruthdict(s).
 
-If given a randset comprised of binary strings of length 8*(d-1), it is easy to convert them to truthdicts and iterate the optimizer over all truthdicts to find a suitably good parameter set.
+If given a randset comprised of binary strings of length 8*(d-1), it is easy to convert them to truthdicts and iterate the optimizer over all of these truthdicts to find a suitably good parameter set.
 
-In one iteration of optimizer, the global value gd_set denotes which parameters are to be optimized in the corrent optimization iteration: gd_set[i,j] either is equal to [0] or to [-gamma,0,gamma] depending on whether optruthdict[i,j] is set to False or True.
+In one iteration of optimizer, the global value gd_set denotes which parameters are to be optimized in the corrent optimization iteration: gd_set[i,j] either is equal to [0] (i.e. no chages take place during this iteration) or to [-gamma,0,gamma] depending on whether optruthdict[i,j] is set to False or True.
 
 
 --- 5.4. SUBROUTINE: LIGHTNING_GD ---
@@ -322,7 +323,7 @@ After <=lightningiter many iterations, the optimal parameter set found will be r
 
 ---------- 6. TABLEPRINT ----------
 
-It is possible to print tables containing all parameters and runtimes, similar to the tables at the end of our paper. To do so, include the packages tabular, hhline, xcolor, colortbl, in the preamble. Additionally, define the colow \definecolor{Gray}{gray}{0.9}.
+It is possible to print tables containing all parameters and runtimes, similar to the tables at the end of our paper. To do so, include the packages tabular, hhline, xcolor, colortbl, in the preamble. Additionally, define the color \definecolor{Gray}{gray}{0.9}.
 
 To print a singular table for one distribution dist and one parameter set eps, call Tableprint(name, eps, eta=3, d=4, dist=[], treatzero=" ", ifthrees=True, ifcolor=True, iftop=False, ifbottom=False).
 
@@ -334,10 +335,15 @@ To print a singular table for one distribution dist and one parameter set eps, c
 - eta (int): if dist is undefined, the distribution will be set to centered_binom_search(eta) by default. Set to 3 by default.
 - d (int): denotes the depth of the search tree and the table. By default set to 4.
 - dist (array): Distribution to be displayed in the table. If left [], automatically assumes that the distribution is centered_binom_search(eta).
-- treatzero (str): Denotes how zeroes will be displayed in the table. By default set to " ".
+- treatzero (str): Denotes how parameters values zero will be displayed in the table. By default set to " ".
 - ifthrees (bool): If True, parameters eps[30,j], eps[31,j], eps[32,j], eps[33,j] will be displayed in the table. Set to False if parameters are Rep-2 parameters only.
 - ifcolor (bool): If True, every second column will be gray. By default set to True.
-- iftop, ifbottom (bool): These two boolean values denote whether or not the top and bottom of the table will be printed. If multiple epsilon parameter sets are to be displayed, it is recommended to set both to false and print the top and bottom separately.
+- iftop, ifbottom (bool): These two boolean values denote whether or not the top and bottom of the table will be printed. If multiple epsilon parameter sets are to be displayed, it is recommended to set both to false and print the top and bottom separately (see 6.2.). By default set to False.
+
+
+--- 6.2. PRINT TOP/BOTTOM ---
+
+If the table that is to be printed only has one distribution and one parameter set that is to be printed, it is easier to set iftop, ifbottom to True. Otherwise, the top and bottom part of the LaTeX code can be printed out by using the command printtop(ifthrees=True, ifcolor=True) and printbottom(). These return the top and bottom part of the table's LaTeX code, respectively. The parameters of printtop work the same way as their tableprint counterparts.
 
 
 
@@ -353,12 +359,12 @@ To print a singular table for one distribution dist and one parameter set eps, c
 
 binomialeps						3.1.
 blisseps							2.4., 3.1.
-Blissdist						2.4.
+blissdist						2.4.
 
-centered_binom_search		2.1.
+centered_binom_dist			2.1.
 create_randset					5.3.1.
 
-etaSearch						2.1.
+etadist							2.1.
 evl								3.2.
 evl_T								3.2.
 evl_L								3.2.
@@ -375,6 +381,8 @@ optimizer						4.
 optruthdict						5.3.2.
 
 pbin								2.1.
+printbottom						6.2.
+printtop							6.2.
 
 representations				3.2.
 roundeps							4.1.
@@ -384,9 +392,9 @@ setup								4.2.
 
 tableprint						6.
 ternaryeps						3.1.
-terSearch						2.3.
+terdist							2.3.
 
 uniformeps						3.1.
-uniSearch						2.2.
+unidist							2.2.
 
 quentropy						1.3.
