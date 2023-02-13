@@ -89,10 +89,11 @@ To reduce unnecessary memory consumption, lists are sorted on-the-fly into hash 
 
 To sort a vector into a bucket, we interpret it (or the result of a function f(v), e.g. A*v) as a q-adic number. This is done by the function assign_int(v, q). To reverse this, we call inv_assign_int(x, q, N), where denotes the length of the resulting vector in case of leading zeroes.
 
-To utilize Odlyzko's locality sensitive hashing function, call odlyzko(v, eta, q, give_c=False); the output is a binary interpretation of all possible odylzko hashes. If the binary odlyzko hash vector itself is required, set give_c=True.
+To utilize Odlyzko's locality sensitive hashing function, call odlyzko(v, eta, q, give_c=False); the output is a binary interpretation of all possible odylzko hashes (i.e. the output is assign_int(h, 2) for all possible hash values h). If the binary odlyzko hash vector itself is required, set give_c=True.
+
+As an example, for q=3329 and eta=1, the possible odlyzko hashes for v=(0,2,1664) are (0,0,0),(0,0,1),(1,0,0),(1,0,1), so odlyzko(v,eta,q) would return [0,1,4,5] (in some order).
 
 
-(tbc)
 
 
 
@@ -126,6 +127,8 @@ Meet								2.
 
 N									1.1.
 Nw									1.1.
+
+odlyzko							2.2.2.
 
 q									1.1.
 

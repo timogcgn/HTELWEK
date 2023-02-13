@@ -55,7 +55,7 @@ def bsearch_component_iter(L,low,high,x,index):
             
 def assign_int(v,q):
     out=0
-    for i in range(len(A)):
+    for i in range(len(v)):
         out+=int(v[i])*q**i
     return out  
             
