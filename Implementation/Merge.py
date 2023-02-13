@@ -4,7 +4,7 @@ from Sampling import inv_create_vec
 from Lists import weight
 import gc
 
-def merge_lists(L1, L2, rf_x, nrf_x, Nw_prevlevel, sign, g, q):
+def merge_lists(L1, L2, nrf_x, Nw_next, sign, g, q):
     out={}
     for key in L1:
         if key in L2:
@@ -16,7 +16,7 @@ def merge_lists(L1, L2, rf_x, nrf_x, Nw_prevlevel, sign, g, q):
                         weight(v,1)==weight(v,q-1) and
                         weight(v,2)==weight(v,q-2) and
                         weight(v,3)==weight(v,q-3) and
-                        inv_create_vec(v)==Nw_prevlevel
+                        inv_create_vec(v)==Nw_next
                     ):
                         assint=assign_int(g+(-1)**sign*(Av)[nrf_x:],q)
                         if assint in out:
@@ -29,7 +29,7 @@ def merge_lists(L1, L2, rf_x, nrf_x, Nw_prevlevel, sign, g, q):
     gc.collect()
     return out
 
-def merge_lists_level_2(L1, L2, Nw_prevlevel, sign, g, q, eta):
+def merge_lists_level_2(L1, L2, Nw_next, sign, g, q, eta):
     out={}
     count=0
     for key in L1:
@@ -42,7 +42,7 @@ def merge_lists_level_2(L1, L2, Nw_prevlevel, sign, g, q, eta):
                         weight(v,1)==weight(v,q-1) and
                         weight(v,2)==weight(v,q-2) and
                         weight(v,3)==weight(v,q-3) and
-                        inv_create_vec(v)==Nw_prevlevel
+                        inv_create_vec(v)==Nw_next
                     ):
                         count+=1
                         odlyzko_hash=odlyzko(g+(-1)**sign*Av, eta, q)
@@ -56,7 +56,7 @@ def merge_lists_level_2(L1, L2, Nw_prevlevel, sign, g, q, eta):
     gc.collect()
     return out
 
-def merge_lists_level_1(L1, L2, Nw_prevlevel, t, q, eta):
+def merge_lists_level_1(L1, L2, Nw_next, t, q, eta):
     out_yes=[]
     out_no=[]
     for key in L1:
@@ -69,7 +69,7 @@ def merge_lists_level_1(L1, L2, Nw_prevlevel, t, q, eta):
                         weight(v,1)==weight(v,q-1) and
                         weight(v,2)==weight(v,q-2) and
                         weight(v,3)==weight(v,q-3) and
-                        inv_create_vec(v)==Nw_prevlevel and
+                        inv_create_vec(v)==Nw_next and
                         eta_small(Av-t, eta, q)
                     ):
                         out_yes+=[v]
